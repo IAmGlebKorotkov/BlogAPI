@@ -37,13 +37,21 @@ builder.Services.AddSwaggerGen(c =>
 
     // Настраиваем Swagger для правильной интерпретации атрибутов [Authorize] и [AllowAnonymous]
     c.OperationFilter<SwaggerAuthorizeOperationFilter>();
+
+    // Добавляем описание ответов для эндпоинтов register, login, getProfile, updateProfile и getTags
+    c.OperationFilter<RegisterResponseOperationFilter>();
+    c.OperationFilter<LoginResponseOperationFilter>();
+    c.OperationFilter<GetProfileResponseOperationFilter>();
+    c.OperationFilter<UpdateProfileResponseOperationFilter>();
+    c.OperationFilter<GetTagsResponseOperationFilter>();
 });
 
-// Настройка Identity и MySQL
+// Настройка Identity и PostgreSQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), 
-        new MySqlServerVersion(new Version(8, 0, 21)),
-        mySqlOptions => mySqlOptions.EnableRetryOnFailure())); // Включаем повторные попытки подключения
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddDbContext<TagContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddIdentity<UserDto, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()

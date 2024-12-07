@@ -33,7 +33,13 @@ public class UsersController : ControllerBase
 
         if (result.Succeeded)
         {
-            return Ok(new { message = "User registered successfully" });
+            // Найдем пользователя по email
+            var user = await _userService.FindUserByEmailAsync(model.Email);
+
+            // Сгенерируем токен для пользователя
+            var token = _authService.GenerateJwtToken(user);
+
+            return Ok(new { message = "User registered successfully", token });
         }
 
         return BadRequest(result.Errors);
@@ -94,17 +100,19 @@ public class UsersController : ControllerBase
             return NotFound(new { message = "User not found" });
         }
 
-        // Возвращаем информацию о пользователе
-        return Ok(new
+        // Возвращаем информацию о пользователе в виде UserProfileDto
+        var userProfile = new UserProfileDto
         {
-            user.Id,
-            user.UserName,
-            user.Email,
-            user.FullName,
-            user.BirthDate,
-            user.Gender,
-            user.PhoneNumber
-        });
+            Id = user.Id,
+            CreateTime = user.CreateTime,
+            FullName = user.FullName,
+            BirthDate = user.BirthDate,
+            Gender = user.Gender,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber
+        };
+
+        return Ok(userProfile);
     }
 
     [Authorize]

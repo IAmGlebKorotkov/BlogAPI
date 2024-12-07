@@ -31,7 +31,7 @@ public class AuthService
         return null;
     }
 
-    private string GenerateJwtToken(UserDto user)
+    public string GenerateJwtToken(UserDto user)
     {
         var claims = new[]
         {

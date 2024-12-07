@@ -46,4 +46,9 @@ public class UserService
         var result = await _userManager.UpdateAsync(user);
         return result;
     }
+
+    public async Task<UserDto> FindUserByEmailAsync(string email)
+    {
+        return await _userManager.FindByEmailAsync(email);
+    }
 }
