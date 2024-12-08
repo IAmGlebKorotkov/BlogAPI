@@ -126,8 +126,7 @@ public class UsersController : ControllerBase
         {
             return Unauthorized(new { message = "User is not authenticated" });
         }
-
-        // Обновляем профиль пользователя
+        
         var result = await _userService.UpdateUserProfileAsync(userId, model);
 
         if (result.Succeeded)
