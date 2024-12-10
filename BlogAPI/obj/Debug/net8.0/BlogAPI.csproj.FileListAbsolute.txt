@@ -126,3 +126,4 @@
 /Users/glebkorotkov/RiderProjects/BlogAPI/BlogAPI/bin/Debug/net8.0/Microsoft.IdentityModel.Tokens.dll
 /Users/glebkorotkov/RiderProjects/BlogAPI/BlogAPI/bin/Debug/net8.0/System.IdentityModel.Tokens.Jwt.dll
 /Users/glebkorotkov/RiderProjects/BlogAPI/BlogAPI/obj/Debug/net8.0/BlogAPI.sourcelink.json
+/Users/glebkorotkov/RiderProjects/BlogAPI/BlogAPI/bin/Debug/net8.0/BCrypt.Net-Next.dll

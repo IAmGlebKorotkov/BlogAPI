@@ -1,16 +1,16 @@
+using System.Text;
+using BlogAPI.DbContext;
+using BlogAPI.Models;
+using BlogAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using BlogAPI.DbContext;
-using BlogAPI.Filters;
-using BlogAPI.Models;
-using BlogAPI.Service;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Добавляем сервисы в контейнер
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -32,33 +32,22 @@ builder.Services.AddSwaggerGen(c =>
         }
     };
     c.AddSecurityDefinition("Bearer", securityScheme);
-
-    c.OperationFilter<SwaggerAuthorizeOperationFilter>();
-
-    c.OperationFilter<RegisterResponseOperationFilter>();
-    c.OperationFilter<LoginResponseOperationFilter>();
-    c.OperationFilter<GetProfileResponseOperationFilter>();
-    c.OperationFilter<UpdateProfileResponseOperationFilter>();
-    c.OperationFilter<GetTagsResponseOperationFilter>();
-
-    c.OperationFilter<GetCommunitiesResponseOperationFilter>();
-
-    c.OperationFilter<GetCommunityByIdResponseOperationFilter>();
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        { securityScheme, new[] { "Bearer" } }
+    });
 });
 
+// Настройка подключения к базе данных
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddDbContext<TagContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-builder.Services.AddDbContext<CommunityContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+// Настройка Identity
 builder.Services.AddIdentity<UserDto, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
+// Настройка JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 builder.Services.AddAuthentication(options =>
 {
@@ -78,11 +67,17 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// Регистрация сервисов
 builder.Services.AddScoped<UserService>();
+
 builder.Services.AddScoped<AuthService>();
+
+// Добавляем сервис логирования
+builder.Services.AddLogging();
 
 var app = builder.Build();
 
+// Настройка HTTP-запросов
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

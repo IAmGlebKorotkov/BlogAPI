@@ -1,9 +1,10 @@
 using System.Security.Claims;
 using BlogAPI.Models;
-using BlogAPI.Service;
+using BlogAPI.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -12,12 +13,14 @@ public class UsersController : ControllerBase
     private readonly UserService _userService;
     private readonly AuthService _authService;
     private readonly UserManager<UserDto> _userManager;
+    private readonly ILogger<UsersController> _logger;
 
-    public UsersController(UserService userService, AuthService authService, UserManager<UserDto> userManager)
+    public UsersController(UserService userService, AuthService authService, UserManager<UserDto> userManager, ILogger<UsersController> logger)
     {
         _userService = userService;
         _authService = authService;
         _userManager = userManager;
+        _logger = logger;
     }
 
     [AllowAnonymous]
@@ -33,8 +36,20 @@ public class UsersController : ControllerBase
 
         if (result.Succeeded)
         {
+            // Логирование email
+            _logger.LogInformation($"Trying to find user by email: {model.Email}");
+
+            // Добавляем небольшую задержку перед поиском пользователя
+            await Task.Delay(500);
+
             // Найдем пользователя по email
             var user = await _userService.FindUserByEmailAsync(model.Email);
+
+            if (user == null)
+            {
+                _logger.LogError($"User not found after registration: {model.Email}");
+                return BadRequest("User not found after registration.");
+            }
 
             // Сгенерируем токен для пользователя
             var token = _authService.GenerateJwtToken(user);
@@ -54,12 +69,20 @@ public class UsersController : ControllerBase
             return BadRequest(ModelState);
         }
 
+        // Логирование начала входа
+        _logger.LogInformation($"Starting login for email: {credentials.Email}");
+
+        // Аутентификация пользователя
         var token = await _authService.AuthenticateAsync(credentials);
 
         if (token == null)
         {
+            _logger.LogWarning($"Login failed for email: {credentials.Email}");
             return Unauthorized();
         }
+
+        // Логирование успешного входа
+        _logger.LogInformation($"Login successful for email: {credentials.Email}");
 
         return Ok(new { token });
     }
@@ -126,7 +149,8 @@ public class UsersController : ControllerBase
         {
             return Unauthorized(new { message = "User is not authenticated" });
         }
-        
+
+        // Обновляем профиль пользователя
         var result = await _userService.UpdateUserProfileAsync(userId, model);
 
         if (result.Succeeded)

@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "4eMdd8JCP7I=",
+  "dgSpecHash": "NP1xPeYH+4k=",
   "success": true,
   "projectFilePath": "/Users/glebkorotkov/RiderProjects/BlogAPI/BlogAPI/BlogAPI.csproj",
   "expectedPackageFiles": [
+    "/Users/glebkorotkov/.nuget/packages/bcrypt.net-next/4.0.3/bcrypt.net-next.4.0.3.nupkg.sha512",
     "/Users/glebkorotkov/.nuget/packages/humanizer.core/2.14.1/humanizer.core.2.14.1.nupkg.sha512",
     "/Users/glebkorotkov/.nuget/packages/microsoft.aspnetcore.authentication/2.2.0/microsoft.aspnetcore.authentication.2.2.0.nupkg.sha512",
     "/Users/glebkorotkov/.nuget/packages/microsoft.aspnetcore.authentication.abstractions/2.2.0/microsoft.aspnetcore.authentication.abstractions.2.2.0.nupkg.sha512",

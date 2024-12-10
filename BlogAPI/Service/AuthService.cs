@@ -2,53 +2,75 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using BlogAPI.Models;
-using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
+using BlogAPI.DbContext;
 
-namespace BlogAPI.Service;
+namespace BlogAPI.Services;
 
 public class AuthService
 {
-    private readonly UserManager<UserDto> _userManager;
+    private readonly ApplicationDbContext _context;
     private readonly IConfiguration _configuration;
+    private readonly ILogger<AuthService> _logger;
 
-    public AuthService(UserManager<UserDto> userManager, IConfiguration configuration)
+    public AuthService(ApplicationDbContext context, IConfiguration configuration, ILogger<AuthService> logger)
     {
-        _userManager = userManager;
+        _context = context;
         _configuration = configuration;
+        _logger = logger;
     }
 
     public async Task<string> AuthenticateAsync(LoginCredentials credentials)
     {
-        var user = await _userManager.FindByEmailAsync(credentials.Email);
-        if (user != null && await _userManager.CheckPasswordAsync(user, credentials.Password))
+        // Логирование начала аутентификации
+        _logger.LogInformation($"Starting authentication for email: {credentials.Email}");
+
+        // Поиск пользователя по email
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == credentials.Email);
+        if (user == null)
         {
-            var token = GenerateJwtToken(user);
-            return token;
+            _logger.LogWarning($"User with email {credentials.Email} not found.");
+            return null;
         }
 
-        return null;
+        // Проверка пароля с использованием BCrypt
+        var isPasswordValid = BCrypt.Net.BCrypt.Verify(credentials.Password, user.PasswordHash);
+        if (!isPasswordValid)
+        {
+            _logger.LogWarning($"Invalid password for user with email: {credentials.Email}");
+            return null;
+        }
+
+        // Генерация JWT-токена
+        var token = GenerateJwtToken(user);
+
+        // Логирование успешного входа
+        _logger.LogInformation($"User with email {credentials.Email} authenticated successfully.");
+
+        return token;
     }
 
     public string GenerateJwtToken(UserDto user)
     {
-        var claims = new[]
+        // Создание claims для токена
+        var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
+        // Получение ключа из конфигурации
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expires = DateTime.Now.AddDays(1);
 
+        // Создание токена
         var token = new JwtSecurityToken(
-            _configuration["Jwt:Issuer"],
-            _configuration["Jwt:Audience"],
-            claims,
-            expires: expires,
+            issuer: _configuration["Jwt:Issuer"],
+            audience: _configuration["Jwt:Audience"],
+            claims: claims,
+            expires: DateTime.Now.AddDays(1),
             signingCredentials: creds
         );
 
