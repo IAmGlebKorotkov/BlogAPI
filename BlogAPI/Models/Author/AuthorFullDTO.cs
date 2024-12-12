@@ -3,10 +3,16 @@ using BlogAPI.Models.Enums;
 
 namespace BlogAPI.Models.Author;
 
-public class AuthorDto
+public class AuthorFULLDto
 {
+    [Key]
+    public Guid Id { get; set; }
+
     [Required]
     public string FullName { get; set; }
+    
+    [Required]
+    public string id_user { get; set; }
 
     public DateTime? BirthDate { get; set; }
 

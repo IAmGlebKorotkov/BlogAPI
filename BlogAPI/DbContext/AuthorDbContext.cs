@@ -5,13 +5,13 @@ namespace BlogAPI.DbContext;
 
 public class AuthorContext : Microsoft.EntityFrameworkCore.DbContext
 {
-    public DbSet<AuthorDto> Authors { get; set; }
+    public DbSet<AuthorFULLDto> Authors { get; set; }
 
     public AuthorContext(DbContextOptions<AuthorContext> options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<AuthorDto>(entity =>
+        modelBuilder.Entity<AuthorFULLDto>(entity =>
         {
             entity.ToTable("author", "fias");
             entity.HasKey(a => a.Id);

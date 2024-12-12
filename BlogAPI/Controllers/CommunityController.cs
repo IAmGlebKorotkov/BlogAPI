@@ -306,7 +306,7 @@ public class CommunityController : ControllerBase
                     return NotFound(new Response { Status = "Error", Message = "User not found" });
                 }
 
-                author = new AuthorDto
+                author = new AuthorFULLDto
                 {
                     Id = Guid.NewGuid(),
                     id_user = userId,
@@ -350,6 +350,94 @@ public class CommunityController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while creating a post in the community.");
+            return StatusCode(500, new Response
+            {
+                Status = "Error",
+                Message = "An error occurred while processing your request."
+            });
+        }
+    }
+
+    [HttpGet("{id}/post")]
+    public async Task<ActionResult<PostPageListDTO>> GetCommunityPosts(
+        string id,
+        [FromQuery] List<string> tags = null, // Фильтр по тегам
+        [FromQuery] PostSorting sorting = PostSorting.CreateDesc, // Сортировка по умолчанию
+        [FromQuery] int page = 1, // Номер страницы
+        [FromQuery] int size = 5 // Количество элементов на странице
+    )
+    {
+        try
+        {
+            // Проверяем, существует ли сообщество
+            var community = await _communityContext.Communities.FindAsync(id);
+            if (community == null)
+            {
+                return NotFound(new Response { Status = "Error", Message = "Community not found" });
+            }
+
+            // Запрос к базе данных
+            var query = _postContext.Posts
+                .Where(p => p.CommunityId == id);
+
+            // Фильтрация по тегам
+            if (tags != null && tags.Any())
+            {
+                query = query.Where(p => tags.Contains(p.TagPosts));
+            }
+
+            // Сортировка
+            switch (sorting)
+            {
+                case PostSorting.CreateDesc:
+                    query = query.OrderByDescending(p => p.CreateTime);
+                    break;
+                case PostSorting.CreateAsc:
+                    query = query.OrderBy(p => p.CreateTime);
+                    break;
+                case PostSorting.LikeDesc:
+                    query = query.OrderByDescending(p => p.Likes);
+                    break;
+                case PostSorting.LikeAsc:
+                    query = query.OrderBy(p => p.Likes);
+                    break;
+                default:
+                    query = query.OrderByDescending(p =>
+                        p.CreateTime); // По умолчанию сортируем по дате создания (убывание)
+                    break;
+            }
+
+            // Пагинация
+            var totalItems = await query.CountAsync(); // Общее количество постов
+            var totalPages = (int)Math.Ceiling(totalItems / (double)size); // Общее количество страниц
+
+            if (page > totalPages)
+            {
+                page = totalPages;
+            }
+
+            var posts = await query
+                .Skip((page - 1) * size)
+                .Take(size)
+                .ToListAsync();
+
+            // Формируем ответ
+            var response = new PostPageListDTO
+            {
+                Posts = posts,
+                Pagination = new PageInfoModel
+                {
+                    Size = size,
+                    Count = totalItems,
+                    Current = page
+                }
+            };
+
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while retrieving posts for the community.");
             return StatusCode(500, new Response
             {
                 Status = "Error",
