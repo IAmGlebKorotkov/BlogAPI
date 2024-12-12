@@ -281,25 +281,25 @@ public class CommunityController : ControllerBase
     {
         try
         {
-            // Получаем ID текущего пользователя из токена
+       
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null)
             {
                 return Unauthorized(new Response { Status = "Error", Message = "User is not authenticated" });
             }
 
-            // Проверяем, существует ли сообщество
+           
             var community = await _communityContext.Communities.FindAsync(id);
             if (community == null)
             {
                 return NotFound(new Response { Status = "Error", Message = "Community not found" });
             }
 
-            // Проверяем, существует ли автор (Author) для текущего пользователя
+         
             var author = await _authorContext.Authors.FirstOrDefaultAsync(a => a.id_user == userId);
             if (author == null)
             {
-                // Если автора нет, создаем нового автора
+           
                 var user = await _userContext.Users.FindAsync(userId);
                 if (user == null)
                 {
@@ -321,8 +321,7 @@ public class CommunityController : ControllerBase
                 _authorContext.Authors.Add(author);
                 await _authorContext.SaveChangesAsync();
             }
-
-            // Создаем новый пост
+            
             var post = new PostDto
             {
                 Id = Guid.NewGuid(),
@@ -361,32 +360,32 @@ public class CommunityController : ControllerBase
     [HttpGet("{id}/post")]
     public async Task<ActionResult<PostPageListDTO>> GetCommunityPosts(
         string id,
-        [FromQuery] List<string> tags = null, // Фильтр по тегам
-        [FromQuery] PostSorting sorting = PostSorting.CreateDesc, // Сортировка по умолчанию
-        [FromQuery] int page = 1, // Номер страницы
-        [FromQuery] int size = 5 // Количество элементов на странице
+        [FromQuery] List<string> tags = null, 
+        [FromQuery] PostSorting sorting = PostSorting.CreateDesc, 
+        [FromQuery] int page = 1, 
+        [FromQuery] int size = 5 
     )
     {
         try
         {
-            // Проверяем, существует ли сообщество
+
             var community = await _communityContext.Communities.FindAsync(id);
             if (community == null)
             {
                 return NotFound(new Response { Status = "Error", Message = "Community not found" });
             }
 
-            // Запрос к базе данных
+    
             var query = _postContext.Posts
                 .Where(p => p.CommunityId == id);
 
-            // Фильтрация по тегам
+
             if (tags != null && tags.Any())
             {
                 query = query.Where(p => tags.Contains(p.TagPosts));
             }
 
-            // Сортировка
+
             switch (sorting)
             {
                 case PostSorting.CreateDesc:
@@ -403,13 +402,13 @@ public class CommunityController : ControllerBase
                     break;
                 default:
                     query = query.OrderByDescending(p =>
-                        p.CreateTime); // По умолчанию сортируем по дате создания (убывание)
+                        p.CreateTime);
                     break;
             }
 
             // Пагинация
-            var totalItems = await query.CountAsync(); // Общее количество постов
-            var totalPages = (int)Math.Ceiling(totalItems / (double)size); // Общее количество страниц
+            var totalItems = await query.CountAsync(); 
+            var totalPages = (int)Math.Ceiling(totalItems / (double)size); 
 
             if (page > totalPages)
             {
@@ -420,8 +419,7 @@ public class CommunityController : ControllerBase
                 .Skip((page - 1) * size)
                 .Take(size)
                 .ToListAsync();
-
-            // Формируем ответ
+            
             var response = new PostPageListDTO
             {
                 Posts = posts,

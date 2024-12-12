@@ -18,7 +18,7 @@ public class CommunityContext : Microsoft.EntityFrameworkCore.DbContext
     {
         modelBuilder.Entity<CommunityDto>(entity =>
         {
-            entity.ToTable("community", "fias"); // Таблица для базового класса
+            entity.ToTable("community", "fias"); 
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CreateTime).HasColumnName("create_time");
@@ -27,8 +27,7 @@ public class CommunityContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(e => e.IsClosed).HasColumnName("is_closed");
             entity.Property(e => e.SubscribersCount).HasColumnName("subscribers_count");
         });
-
-        // Настройка CommunityUserDto
+        
         modelBuilder.Entity<CommunityUserDto>(entity =>
         {
             entity.ToTable("user_community", "fias");
@@ -37,23 +36,23 @@ public class CommunityContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(e => e.CommunityId).HasColumnName("community_id");
             entity.Property(e => e.Role).HasColumnName("role");
 
-            // Связь с AspNetUsers
+
             entity.HasOne(uc => uc.User)
                 .WithMany()
                 .HasForeignKey(uc => uc.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Связь с CommunityDto
+
             entity.HasOne(uc => uc.Community)
                 .WithMany()
                 .HasForeignKey(uc => uc.CommunityId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // Настройка AspNetUsers
+
         modelBuilder.Entity<UserDto>(entity =>
         {
-            entity.ToTable("AspNetUsers", "public"); // Указываем схему и имя таблицы
+            entity.ToTable("AspNetUsers", "public"); 
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("Id");
             entity.Property(e => e.FullName).HasColumnName("FullName");

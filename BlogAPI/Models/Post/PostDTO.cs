@@ -7,7 +7,7 @@ namespace BlogAPI.Models.Author;
 public class PostDto
 {
     [Key]
-    [Column("id")] // Убедитесь, что имя столбца совпадает с именем в базе данных
+    [Column("id")] 
     public Guid Id { get; set; }
 
     [Required]
@@ -41,7 +41,7 @@ public class PostDto
     public string Author { get; set; }
 
     [Column("community_id")]
-    public string CommunityId { get; set; }
+    public string? CommunityId { get; set; }
 
     [Column("community_name")]
     public string CommunityName { get; set; }

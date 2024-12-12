@@ -16,9 +16,9 @@ public class PostContext : Microsoft.EntityFrameworkCore.DbContext
     {
         modelBuilder.Entity<PostDto>(entity =>
         {
-            entity.ToTable("post", "fias"); // Указываем имя таблицы и схему
+            entity.ToTable("post", "fias");
             entity.HasKey(p => p.Id);
-            entity.Property(p => p.Id).ValueGeneratedNever(); // Указываем, что Id не генерируется автоматически
+            entity.Property(p => p.Id).ValueGeneratedNever(); 
             entity.Property(p => p.Title).IsRequired();
             entity.Property(p => p.Description).IsRequired();
             entity.Property(p => p.ReadingTime).IsRequired();

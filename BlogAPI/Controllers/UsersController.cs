@@ -142,15 +142,13 @@ public class UsersController : ControllerBase
     [HttpPut("profile")]
     public async Task<IActionResult> UpdateProfile([FromBody] UserEditModel model)
     {
-        // Получаем идентификатор пользователя из токена
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (userId == null)
         {
             return Unauthorized(new { message = "User is not authenticated" });
         }
-
-        // Обновляем профиль пользователя
+        
         var result = await _userService.UpdateUserProfileAsync(userId, model);
 
         if (result.Succeeded)

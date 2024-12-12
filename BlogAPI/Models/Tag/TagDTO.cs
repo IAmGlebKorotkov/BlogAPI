@@ -9,9 +9,9 @@ public class TagDto
     [Column("Id")]
     public Guid Id { get; set; }
 
-    [Column("createtime")] // Исправлено
+    [Column("createtime")]
     public DateTime CreateTime { get; set; }
 
-    [Column("name")] // Исправлено
+    [Column("name")] 
     public string Name { get; set; }
 }

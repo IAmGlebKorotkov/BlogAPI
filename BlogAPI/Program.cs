@@ -58,7 +58,7 @@ builder.Services.AddIdentity<UserDto, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// Настройка JWT
+
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 builder.Services.AddAuthentication(options =>
 {
@@ -78,16 +78,16 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Регистрация сервисов
+
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<AuthService>();
 
-// Добавляем сервис логирования
+
 builder.Services.AddLogging();
 
 var app = builder.Build();
 
-// Настройка HTTP-запросов
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

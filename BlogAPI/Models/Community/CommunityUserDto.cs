@@ -6,17 +6,17 @@ namespace BlogAPI.Models.Community;
 public class CommunityUserDto
 {
     [Required]
-    public string UserId { get; set; } // Первичный ключ
+    public string UserId { get; set; } 
 
     [Required]
-    public string CommunityId { get; set; } // Первичный ключ
+    public string CommunityId { get; set; }
 
     [Required]
     public string Role { get; set; }
     
-    [JsonIgnore] // Исключаем поле из сериализации
+    [JsonIgnore] 
     public UserDto User { get; set; }
 
-    [JsonIgnore] // Исключаем поле из сериализации
+    [JsonIgnore]
     public CommunityDto Community { get; set; }
 }

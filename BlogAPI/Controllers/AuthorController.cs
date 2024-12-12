@@ -19,19 +19,15 @@ public class AuthorController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>
-    /// Получить список авторов
-    /// </summary>
-    /// <returns>Список авторов</returns>
+
     [HttpGet("list")]
     public async Task<ActionResult<IEnumerable<AuthorDto>>> GetAuthors()
     {
         try
         {
-            // Получаем список авторов из базы данных
+
             var authors = await _authorContext.Authors.ToListAsync();
 
-            // Преобразуем данные в модель AuthorList
             var authorList = authors.Select(author => new AuthorDto
             {
                 FullName = author.FullName,
