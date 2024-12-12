@@ -13,7 +13,7 @@ public class UserDto : IdentityUser
     [MinLength(1)]
     public string FullName { get; set; }
 
-    public DateTime? BirthDate { get; set; }
+    public DateTime? BirthDate { get; set; } 
 
     [Required]
     public GenderEnum Gender { get; set; }

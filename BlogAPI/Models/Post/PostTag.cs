@@ -1,21 +1,14 @@
-using System.ComponentModel.DataAnnotations;
+/*using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using BlogAPI.Models.Author;
 
 namespace BlogAPI.Models.Post;
 
-public class PostTag
+public class TagPost
 {
     [Key]
-    [Column("post_id")]
-    public Guid PostId { get; set; }
-
-    [Key]
-    [Column("tag_id")]
     public Guid TagId { get; set; }
 
-    [ForeignKey("PostId")]
-    public PostDto Post { get; set; }
-
-    [ForeignKey("TagId")]
-    public TagDto Tag { get; set; }
-}
+    [Key]
+    public Guid PostId { get; set; }
+}*/

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using BlogAPI.Models.Author;
 
 namespace BlogAPI.Models.Post;
 

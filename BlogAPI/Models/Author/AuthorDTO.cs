@@ -9,8 +9,10 @@ public class AuthorDto
     public Guid Id { get; set; }
 
     [Required]
-    [MinLength(1)]
     public string FullName { get; set; }
+    
+    [Required]
+    public string id_user { get; set; }
 
     public DateTime? BirthDate { get; set; }
 

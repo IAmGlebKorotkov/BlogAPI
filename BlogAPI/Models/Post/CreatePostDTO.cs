@@ -25,5 +25,5 @@ public class CreatePostDto
 
     [Required]
     [MinLength(1)]
-    public List<Guid> Tags { get; set; }
+    public string Tags { get; set; }
 }

@@ -11,16 +11,11 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Добавляем контроллеры
 builder.Services.AddControllers();
-
-// Добавляем поддержку Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
-
-    // Настройка JWT-авторизации в Swagger
     var securityScheme = new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -36,8 +31,7 @@ builder.Services.AddSwaggerGen(c =>
         }
     };
     c.AddSecurityDefinition("Bearer", securityScheme);
-
-    // Добавляем фильтры для Swagger
+    
     c.OperationFilter<SwaggerAuthorizeOperationFilter>();
     c.OperationFilter<RegisterResponseOperationFilter>();
     c.OperationFilter<LoginResponseOperationFilter>();
@@ -48,15 +42,18 @@ builder.Services.AddSwaggerGen(c =>
     c.OperationFilter<GetCommunitiesResponseOperationFilter>();
 });
 
-// Настройка Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddDbContext<CommunityContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddDbContext<TagContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<AuthorContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<PostContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Настройка Identity
+
 builder.Services.AddIdentity<UserDto, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();

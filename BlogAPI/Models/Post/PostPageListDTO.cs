@@ -1,3 +1,5 @@
+using BlogAPI.Models.Author;
+
 namespace BlogAPI.Models.Post;
 
 public class PostPageListDTO

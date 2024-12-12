@@ -22,6 +22,114 @@ namespace BlogAPI.Migrations.Community
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("BlogAPI.Models.Author.AuthorDto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("BirthDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("birth_date");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("full_name");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("integer")
+                        .HasColumnName("gender");
+
+                    b.Property<int>("Likes")
+                        .HasColumnType("integer")
+                        .HasColumnName("likes");
+
+                    b.Property<int>("Posts")
+                        .HasColumnType("integer")
+                        .HasColumnName("posts");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("author", "fias");
+                });
+
+            modelBuilder.Entity("BlogAPI.Models.Author.PostDto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid?>("AddressId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("address_id");
+
+                    b.Property<string>("Author")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("author");
+
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("author_id");
+
+                    b.Property<int>("CommentsCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("comments_count");
+
+                    b.Property<Guid?>("CommunityId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("community_id");
+
+                    b.Property<string>("CommunityName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("community_name");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("create_time");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("HasLike")
+                        .HasColumnType("boolean")
+                        .HasColumnName("has_like");
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("image");
+
+                    b.Property<int>("Likes")
+                        .HasColumnType("integer")
+                        .HasColumnName("likes");
+
+                    b.Property<int>("ReadingTime")
+                        .HasColumnType("integer")
+                        .HasColumnName("reading_time");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("title");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.ToTable("post", "fias");
+                });
+
             modelBuilder.Entity("BlogAPI.Models.Community.CommunityDto", b =>
                 {
                     b.Property<string>("Id")
@@ -52,8 +160,6 @@ namespace BlogAPI.Migrations.Community
                     b.HasKey("Id");
 
                     b.ToTable("community", "fias");
-
-                    b.UseTptMappingStrategy();
                 });
 
             modelBuilder.Entity("BlogAPI.Models.Community.CommunityUserDto", b =>
@@ -78,11 +184,53 @@ namespace BlogAPI.Migrations.Community
                     b.ToTable("user_community", "fias");
                 });
 
+            modelBuilder.Entity("BlogAPI.Models.Post.TagPost", b =>
+                {
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tag_id");
+
+                    b.Property<Guid>("PostId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("post_id");
+
+                    b.HasKey("TagId", "PostId");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("tag_post", "fias");
+                });
+
+            modelBuilder.Entity("BlogAPI.Models.TagDto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("Id");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("createtime");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<Guid?>("PostDtoId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostDtoId");
+
+                    b.ToTable("TagDto");
+                });
+
             modelBuilder.Entity("BlogAPI.Models.UserDto", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("text")
-                        .HasColumnName("Id");
+                        .HasColumnType("text");
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
@@ -98,16 +246,14 @@ namespace BlogAPI.Migrations.Community
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("Email");
+                        .HasColumnType("text");
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("FullName");
+                        .HasColumnType("text");
 
                     b.Property<int>("Gender")
                         .HasColumnType("integer");
@@ -145,54 +291,16 @@ namespace BlogAPI.Migrations.Community
 
                     b.HasKey("Id");
 
-                    b.ToTable("AspNetUsers", "public");
+                    b.ToTable("UserDto");
                 });
 
-            modelBuilder.Entity("BlogAPI.Models.UserProfileDto", b =>
+            modelBuilder.Entity("BlogAPI.Models.Author.PostDto", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("BirthDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CommunityFullDtoId")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Gender")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CommunityFullDtoId");
-
-                    b.ToTable("UserProfileDto");
-                });
-
-            modelBuilder.Entity("BlogAPI.Models.Community.CommunityFullDto", b =>
-                {
-                    b.HasBaseType("BlogAPI.Models.Community.CommunityDto");
-
-                    b.ToTable("community_full", "fias");
+                    b.HasOne("BlogAPI.Models.Author.AuthorDto", null)
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("BlogAPI.Models.Community.CommunityUserDto", b =>
@@ -214,25 +322,37 @@ namespace BlogAPI.Migrations.Community
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("BlogAPI.Models.UserProfileDto", b =>
+            modelBuilder.Entity("BlogAPI.Models.Post.TagPost", b =>
                 {
-                    b.HasOne("BlogAPI.Models.Community.CommunityFullDto", null)
-                        .WithMany("Administrators")
-                        .HasForeignKey("CommunityFullDtoId");
-                });
-
-            modelBuilder.Entity("BlogAPI.Models.Community.CommunityFullDto", b =>
-                {
-                    b.HasOne("BlogAPI.Models.Community.CommunityDto", null)
-                        .WithOne()
-                        .HasForeignKey("BlogAPI.Models.Community.CommunityFullDto", "Id")
+                    b.HasOne("BlogAPI.Models.Author.PostDto", "Post")
+                        .WithMany("TagPosts")
+                        .HasForeignKey("PostId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("BlogAPI.Models.TagDto", "Tag")
+                        .WithMany()
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Post");
+
+                    b.Navigation("Tag");
                 });
 
-            modelBuilder.Entity("BlogAPI.Models.Community.CommunityFullDto", b =>
+            modelBuilder.Entity("BlogAPI.Models.TagDto", b =>
                 {
-                    b.Navigation("Administrators");
+                    b.HasOne("BlogAPI.Models.Author.PostDto", null)
+                        .WithMany("Tags")
+                        .HasForeignKey("PostDtoId");
+                });
+
+            modelBuilder.Entity("BlogAPI.Models.Author.PostDto", b =>
+                {
+                    b.Navigation("TagPosts");
+
+                    b.Navigation("Tags");
                 });
 #pragma warning restore 612, 618
         }
