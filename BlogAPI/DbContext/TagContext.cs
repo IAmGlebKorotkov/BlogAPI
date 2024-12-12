@@ -15,11 +15,14 @@ public class TagContext : Microsoft.EntityFrameworkCore.DbContext
     {
         modelBuilder.Entity<TagDto>(entity =>
         {
-            entity.ToTable("tag", "fias");
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).HasColumnName("Id");
-            entity.Property(e => e.CreateTime).HasColumnName("CreateTime");
-            entity.Property(e => e.Name).HasColumnName("Name");
+            entity.ToTable("tag", "fias"); // Указываем схему и имя таблицы
+            entity.HasKey(e => e.Id); // Указываем ключ
+            entity.Property(e => e.Id)
+                .HasColumnName("id") // Указываем имя столбца в базе данных
+                .HasColumnType("uuid"); // Указываем тип столбца в базе данных
+
+            entity.Property(e => e.CreateTime).HasColumnName("createtime");
+            entity.Property(e => e.Name).HasColumnName("name");
         });
     }
 }

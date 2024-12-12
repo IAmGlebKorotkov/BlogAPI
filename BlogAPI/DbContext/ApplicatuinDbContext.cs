@@ -10,4 +10,10 @@ public class ApplicationDbContext : IdentityDbContext<UserDto>
         : base(options)
     {
     }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+        // Дополнительные настройки моделей
+    }
 }

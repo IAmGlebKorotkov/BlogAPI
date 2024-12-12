@@ -1,17 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using BlogAPI.Models.Enums;
+using Microsoft.AspNetCore.Identity;
 
 namespace BlogAPI.Models;
 
-public class UserProfileDto
+public class UserFullDto : IdentityUser
 {
-    [Required]
-    [MinLength(1)]
-    public string Id { get; set; }
-    [Required]
-    [MinLength(1)]
-    public string UserName { get; set; }
-
     [Required]
     public DateTime CreateTime { get; set; }
 

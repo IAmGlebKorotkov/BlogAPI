@@ -1,3 +1,4 @@
+using BlogAPI.Models;
 using BlogAPI.Models.Community;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,14 +11,14 @@ public class CommunityContext : Microsoft.EntityFrameworkCore.DbContext
     {
     }
 
-    public DbSet<CommunityFullDto> Communities { get; set; }
+    public DbSet<CommunityDto> Communities { get; set; }
     public DbSet<CommunityUserDto> CommunityUsers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<CommunityFullDto>(entity =>
+        modelBuilder.Entity<CommunityDto>(entity =>
         {
-            entity.ToTable("community", "fias");
+            entity.ToTable("community", "fias"); // Таблица для базового класса
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.CreateTime).HasColumnName("create_time");
@@ -25,19 +26,38 @@ public class CommunityContext : Microsoft.EntityFrameworkCore.DbContext
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.IsClosed).HasColumnName("is_closed");
             entity.Property(e => e.SubscribersCount).HasColumnName("subscribers_count");
-
-            entity.HasMany<CommunityUserDto>(e => e.Administrators)
-                .WithOne()
-                .HasForeignKey(a => a.CommunityId);
         });
 
+        // Настройка CommunityUserDto
         modelBuilder.Entity<CommunityUserDto>(entity =>
         {
-            entity.ToTable("community_users", "fias");
+            entity.ToTable("user_community", "fias");
             entity.HasKey(e => new { e.UserId, e.CommunityId });
             entity.Property(e => e.UserId).HasColumnName("user_id");
             entity.Property(e => e.CommunityId).HasColumnName("community_id");
             entity.Property(e => e.Role).HasColumnName("role");
+
+            // Связь с AspNetUsers
+            entity.HasOne(uc => uc.User)
+                .WithMany()
+                .HasForeignKey(uc => uc.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Связь с CommunityDto
+            entity.HasOne(uc => uc.Community)
+                .WithMany()
+                .HasForeignKey(uc => uc.CommunityId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Настройка AspNetUsers
+        modelBuilder.Entity<UserDto>(entity =>
+        {
+            entity.ToTable("AspNetUsers", "public"); // Указываем схему и имя таблицы
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("Id");
+            entity.Property(e => e.FullName).HasColumnName("FullName");
+            entity.Property(e => e.Email).HasColumnName("Email");
         });
     }
 }

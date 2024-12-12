@@ -7,10 +7,6 @@ namespace BlogAPI.Models;
 public class UserDto : IdentityUser
 {
     [Required]
-    [MinLength(1)]
-    public string Id { get; set; }
-
-    [Required]
     public DateTime CreateTime { get; set; }
 
     [Required]

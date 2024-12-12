@@ -7,7 +7,7 @@ public class TagDto
 {
     [Key]
     [Column("Id")]
-    public string Id { get; set; }
+    public Guid Id { get; set; }
 
     [Column("CreateTime")]
     public DateTime CreateTime { get; set; }

@@ -13,7 +13,6 @@
         "packagesPath": "/Users/glebkorotkov/.nuget/packages/",
         "outputPath": "/Users/glebkorotkov/RiderProjects/BlogAPI/BlogAPI/obj/",
         "projectStyle": "PackageReference",
-        "UsingMicrosoftNETSdk": false,
         "configFilePaths": [
           "/Users/glebkorotkov/.nuget/NuGet/NuGet.Config"
         ],
