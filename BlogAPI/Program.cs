@@ -53,12 +53,9 @@ builder.Services.AddDbContext<AuthorContext>(options =>
 builder.Services.AddDbContext<PostContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
 builder.Services.AddIdentity<UserDto, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
-
-
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 builder.Services.AddAuthentication(options =>
 {
@@ -78,16 +75,10 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<AuthService>();
-
-
 builder.Services.AddLogging();
-
 var app = builder.Build();
-
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -96,6 +87,7 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
     });
 }
+app.UseMiddleware<SwaggerAuthorizationCleanupMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseAuthentication();

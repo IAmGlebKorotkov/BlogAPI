@@ -14,6 +14,9 @@ public class ApplicationDbContext : IdentityDbContext<UserDto>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        // Дополнительные настройки моделей
+
+        builder.Entity<UserDto>()
+            .Property(u => u.RefreshToken)
+            .HasColumnName("RefreshToken");
     }
 }

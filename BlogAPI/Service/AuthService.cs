@@ -23,10 +23,8 @@ public class AuthService
 
     public async Task<string> AuthenticateAsync(LoginCredentials credentials)
     {
-        // Логирование начала аутентификации
         _logger.LogInformation($"Starting authentication for email: {credentials.Email}");
 
-        // Поиск пользователя по email
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == credentials.Email);
         if (user == null)
         {
@@ -34,7 +32,6 @@ public class AuthService
             return null;
         }
 
-        // Проверка пароля с использованием BCrypt
         var isPasswordValid = BCrypt.Net.BCrypt.Verify(credentials.Password, user.PasswordHash);
         if (!isPasswordValid)
         {
@@ -42,18 +39,34 @@ public class AuthService
             return null;
         }
 
-        // Генерация JWT-токена
         var token = GenerateJwtToken(user);
 
-        // Логирование успешного входа
+        user.RefreshToken = token;
+        await _context.SaveChangesAsync();
+
         _logger.LogInformation($"User with email {credentials.Email} authenticated successfully.");
 
         return token;
     }
 
+    public async Task<bool> LogoutAsync(string userId)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            _logger.LogWarning($"User with ID {userId} not found during logout.");
+            return false;
+        }
+
+        user.RefreshToken = "";
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation($"User with ID {userId} logged out successfully.");
+        return true;
+    }
+
     public string GenerateJwtToken(UserDto user)
     {
-        // Создание claims для токена
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id),
@@ -61,11 +74,9 @@ public class AuthService
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
-        // Получение ключа из конфигурации
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        // Создание токена
         var token = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],

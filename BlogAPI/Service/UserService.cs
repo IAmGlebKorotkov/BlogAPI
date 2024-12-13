@@ -18,7 +18,6 @@ public class UserService
     }
     public async Task<IdentityResult> RegisterUserAsync(UserRegisterModel model)
     {
-        // Хеширование пароля с использованием BCrypt
         var hashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password);
 
         var user = new UserDto
@@ -31,7 +30,7 @@ public class UserService
             Gender = model.Gender,
             PhoneNumber = model.PhoneNumber,
             CreateTime = DateTime.UtcNow,
-            PasswordHash = hashedPassword // Сохраняем хешированный пароль
+            PasswordHash = hashedPassword 
         };
 
         _context.Users.Add(user);

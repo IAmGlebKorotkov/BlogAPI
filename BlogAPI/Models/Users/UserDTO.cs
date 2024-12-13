@@ -25,4 +25,6 @@ public class UserDto : IdentityUser
 
     [Phone]
     public string PhoneNumber { get; set; }
+    
+    public string RefreshToken { get; set; }
 }

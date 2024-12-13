@@ -55,6 +55,36 @@ public class CommunityController : ControllerBase
         }
     }
 
+    [Authorize]
+    [HttpGet("my")]
+    public async Task<ActionResult<IEnumerable<CommunityUserDto>>> GetMyCommunities()
+    {
+        try
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+            {
+                return Unauthorized(new Response { Status = "Error", Message = "User is not authenticated" });
+            }
+
+            var userCommunities = await _communityContext.CommunityUsers
+                .Where(uc => uc.UserId == userId)
+                .ToListAsync();
+
+            return Ok(userCommunities);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while retrieving user's communities.");
+            var response = new Response
+            {
+                Status = "Error",
+                Message = "An error occurred while processing your request."
+            };
+            return StatusCode(500, response);
+        }
+    }
+    
     [HttpGet("{id}")]
     public async Task<ActionResult<CommunityFullDto>> GetCommunityById(string id)
     {
@@ -110,10 +140,97 @@ public class CommunityController : ControllerBase
             return StatusCode(500, response);
         }
     }
+    
+    [HttpGet("{id}/post")]
+    public async Task<ActionResult<PostPageListDTO>> GetCommunityPosts(
+        string id,
+        [FromQuery] List<string> tags = null, 
+        [FromQuery] PostSorting sorting = PostSorting.CreateDesc, 
+        [FromQuery] int page = 1, 
+        [FromQuery] int size = 5 
+    )
+    {
+        try
+        {
+
+            var community = await _communityContext.Communities.FindAsync(id);
+            if (community == null)
+            {
+                return NotFound(new Response { Status = "Error", Message = "Community not found" });
+            }
+
+    
+            var query = _postContext.Posts
+                .Where(p => p.CommunityId == id);
+
+
+            if (tags != null && tags.Any())
+            {
+                query = query.Where(p => tags.Contains(p.TagPosts));
+            }
+
+
+            switch (sorting)
+            {
+                case PostSorting.CreateDesc:
+                    query = query.OrderByDescending(p => p.CreateTime);
+                    break;
+                case PostSorting.CreateAsc:
+                    query = query.OrderBy(p => p.CreateTime);
+                    break;
+                case PostSorting.LikeDesc:
+                    query = query.OrderByDescending(p => p.Likes);
+                    break;
+                case PostSorting.LikeAsc:
+                    query = query.OrderBy(p => p.Likes);
+                    break;
+                default:
+                    query = query.OrderByDescending(p =>
+                        p.CreateTime);
+                    break;
+            }
+
+            var totalItems = await query.CountAsync(); 
+            var totalPages = (int)Math.Ceiling(totalItems / (double)size); 
+
+            if (page > totalPages)
+            {
+                page = totalPages;
+            }
+
+            var posts = await query
+                .Skip((page - 1) * size)
+                .Take(size)
+                .ToListAsync();
+            
+            var response = new PostPageListDTO
+            {
+                Posts = posts,
+                Pagination = new PageInfoModel
+                {
+                    Size = size,
+                    Count = totalItems,
+                    Current = page
+                }
+            };
+
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while retrieving posts for the community.");
+            return StatusCode(500, new Response
+            {
+                Status = "Error",
+                Message = "An error occurred while processing your request."
+            });
+        }
+    }
+    
 
     [Authorize]
-    [HttpGet("my")]
-    public async Task<ActionResult<IEnumerable<CommunityUserDto>>> GetMyCommunities()
+    [HttpGet("{id}/role")]
+    public async Task<IActionResult> GetUserRoleInCommunity(string id)
     {
         try
         {
@@ -123,24 +240,35 @@ public class CommunityController : ControllerBase
                 return Unauthorized(new Response { Status = "Error", Message = "User is not authenticated" });
             }
 
-            var userCommunities = await _communityContext.CommunityUsers
-                .Where(uc => uc.UserId == userId)
-                .ToListAsync();
+            var communityExists = await _communityContext.Communities.AnyAsync(c => c.Id == id);
+            if (!communityExists)
+            {
+                return NotFound(new Response { Status = "Error", Message = "Community not found" });
+            }
 
-            return Ok(userCommunities);
+            var userRole = await _communityContext.CommunityUsers
+                .Where(uc => uc.UserId == userId && uc.CommunityId == id)
+                .Select(uc => uc.Role)
+                .FirstOrDefaultAsync();
+
+            if (userRole == null)
+            {
+                return NotFound(new Response { Status = "Error", Message = "User is not a member of this community" });
+            }
+
+            return Ok(new { Role = userRole });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while retrieving user's communities.");
-            var response = new Response
+            _logger.LogError(ex, "An error occurred while retrieving user role in community.");
+            return StatusCode(500, new Response
             {
                 Status = "Error",
                 Message = "An error occurred while processing your request."
-            };
-            return StatusCode(500, response);
+            });
         }
     }
-
+    
     [Authorize]
     [HttpPost("{id}/subscribe")]
     public async Task<IActionResult> SubscribeToCommunity(string id)
@@ -183,47 +311,6 @@ public class CommunityController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while subscribing to the community.");
-            return StatusCode(500, new Response
-            {
-                Status = "Error",
-                Message = "An error occurred while processing your request."
-            });
-        }
-    }
-
-    [Authorize]
-    [HttpGet("{id}/role")]
-    public async Task<IActionResult> GetUserRoleInCommunity(string id)
-    {
-        try
-        {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userId == null)
-            {
-                return Unauthorized(new Response { Status = "Error", Message = "User is not authenticated" });
-            }
-
-            var communityExists = await _communityContext.Communities.AnyAsync(c => c.Id == id);
-            if (!communityExists)
-            {
-                return NotFound(new Response { Status = "Error", Message = "Community not found" });
-            }
-
-            var userRole = await _communityContext.CommunityUsers
-                .Where(uc => uc.UserId == userId && uc.CommunityId == id)
-                .Select(uc => uc.Role)
-                .FirstOrDefaultAsync();
-
-            if (userRole == null)
-            {
-                return NotFound(new Response { Status = "Error", Message = "User is not a member of this community" });
-            }
-
-            return Ok(new { Role = userRole });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An error occurred while retrieving user role in community.");
             return StatusCode(500, new Response
             {
                 Status = "Error",
@@ -349,93 +436,6 @@ public class CommunityController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred while creating a post in the community.");
-            return StatusCode(500, new Response
-            {
-                Status = "Error",
-                Message = "An error occurred while processing your request."
-            });
-        }
-    }
-
-    [HttpGet("{id}/post")]
-    public async Task<ActionResult<PostPageListDTO>> GetCommunityPosts(
-        string id,
-        [FromQuery] List<string> tags = null, 
-        [FromQuery] PostSorting sorting = PostSorting.CreateDesc, 
-        [FromQuery] int page = 1, 
-        [FromQuery] int size = 5 
-    )
-    {
-        try
-        {
-
-            var community = await _communityContext.Communities.FindAsync(id);
-            if (community == null)
-            {
-                return NotFound(new Response { Status = "Error", Message = "Community not found" });
-            }
-
-    
-            var query = _postContext.Posts
-                .Where(p => p.CommunityId == id);
-
-
-            if (tags != null && tags.Any())
-            {
-                query = query.Where(p => tags.Contains(p.TagPosts));
-            }
-
-
-            switch (sorting)
-            {
-                case PostSorting.CreateDesc:
-                    query = query.OrderByDescending(p => p.CreateTime);
-                    break;
-                case PostSorting.CreateAsc:
-                    query = query.OrderBy(p => p.CreateTime);
-                    break;
-                case PostSorting.LikeDesc:
-                    query = query.OrderByDescending(p => p.Likes);
-                    break;
-                case PostSorting.LikeAsc:
-                    query = query.OrderBy(p => p.Likes);
-                    break;
-                default:
-                    query = query.OrderByDescending(p =>
-                        p.CreateTime);
-                    break;
-            }
-
-            // Пагинация
-            var totalItems = await query.CountAsync(); 
-            var totalPages = (int)Math.Ceiling(totalItems / (double)size); 
-
-            if (page > totalPages)
-            {
-                page = totalPages;
-            }
-
-            var posts = await query
-                .Skip((page - 1) * size)
-                .Take(size)
-                .ToListAsync();
-            
-            var response = new PostPageListDTO
-            {
-                Posts = posts,
-                Pagination = new PageInfoModel
-                {
-                    Size = size,
-                    Count = totalItems,
-                    Current = page
-                }
-            };
-
-            return Ok(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An error occurred while retrieving posts for the community.");
             return StatusCode(500, new Response
             {
                 Status = "Error",

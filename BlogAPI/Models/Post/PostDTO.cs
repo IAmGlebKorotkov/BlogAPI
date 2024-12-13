@@ -44,7 +44,7 @@ public class PostDto
     public string? CommunityId { get; set; }
 
     [Column("community_name")]
-    public string CommunityName { get; set; }
+    public string? CommunityName { get; set; }
 
     [Required]
     [Column("tag_posts")]
